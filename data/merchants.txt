@@ -1,0 +1,52 @@
+swiggy
+zomato
+uber
+ola
+starbucks
+ccd
+dominos
+amazon
+flipkart
+netflix
+spotify
+bookmyshow
+bigbasket
+instamart
+electricityboard
+waterboard
+internetprovider
+landlord
+uber eats
+ola foods
+amazon pay
+google pay
+phonepe
+paytm
+airtel
+jio
+vodafone
+bsnl
+myntra
+ajio
+meesho
+snapdeal
+irctc
+makemytrip
+cleartrip
+goibibo
+indigo
+airindia
+vistara
+spicejet
+uber intercity
+ola cabs
+blinkit
+zepto
+dunzo
+swiggy instamart
+paytm mall
+tataplay
+hotstar
+prime video
+apple music
+youtube premium

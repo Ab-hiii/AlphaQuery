@@ -1,0 +1,60 @@
+[
+  { "id": 1, "query": "How much did I spend on food last month?", "intent": "total_spend", "category": "food", "date_required": true },
+  { "id": 2, "query": "Show my Zomato orders on September 2, 2025", "intent": "list_transactions", "merchant": "zomato", "date_required": true },
+
+  { "id": 3, "query": "How much did I spend on coffee last month?", "intent": "total_spend", "category": "cafe", "date_required": true },
+  { "id": 4, "query": "Show my Netflix subscription expenses this year", "intent": "list_transactions", "merchant": "netflix", "date_required": false },
+  { "id": 5, "query": "How much did I spend on travel in July?", "intent": "total_spend", "category": "transport", "date_required": true },
+  { "id": 6, "query": "List all Amazon purchases this month", "intent": "list_transactions", "merchant": "amazon", "date_required": true },
+  { "id": 7, "query": "Compare my spending this month vs last month", "intent": "compare_periods", "date_required": true },
+  { "id": 8, "query": "Show all Swiggy food orders this month", "intent": "list_transactions", "merchant": "swiggy", "category": "food", "date_required": true },
+  { "id": 9, "query": "What was my biggest spending category in August?", "intent": "top_category", "date_required": true },
+  { "id": 10, "query": "Show all Uber rides this month", "intent": "list_transactions", "merchant": "uber", "date_required": true },
+
+  { "id": 11, "query": "How much did I spend on groceries in September?", "intent": "total_spend", "category": "grocery", "date_required": true },
+  { "id": 12, "query": "List all transactions from last month", "intent": "list_transactions", "date_required": true },
+  { "id": 13, "query": "What was my total rent payment last year?", "intent": "total_spend", "category": "rent", "date_required": false },
+  { "id": 14, "query": "Show me Swiggy purchases this month", "intent": "list_transactions", "merchant": "swiggy", "date_required": true },
+  { "id": 15, "query": "How much did I spend on phone and internet bills?", "intent": "total_spend", "category": "utilities", "date_required": false },
+  { "id": 16, "query": "What is my average monthly spending?", "intent": "average_spend", "date_required": false },
+  { "id": 17, "query": "Show my electricity and water bills this month", "intent": "list_transactions", "category": "utilities", "date_required": true },
+  { "id": 18, "query": "How much did I spend on gifts?", "intent": "total_spend", "category": "gifts", "date_required": false },
+  { "id": 19, "query": "Show all entertainment expenses this month", "intent": "list_transactions", "category": "entertainment", "date_required": true },
+  { "id": 20, "query": "How much did I spend on groceries this month?", "intent": "total_spend", "category": "grocery", "date_required": true },
+
+  { "id": 21, "query": "List all shopping transactions in October", "intent": "list_transactions", "category": "shopping", "date_required": true },
+  { "id": 22, "query": "What is my total online shopping spend this month?", "intent": "total_spend", "category": "shopping", "date_required": true },
+  { "id": 23, "query": "Show all Starbucks transactions this month", "intent": "list_transactions", "merchant": "starbucks", "date_required": true },
+  { "id": 24, "query": "How much did I spend on subscriptions in August?", "intent": "total_spend", "category": "subscriptions", "date_required": true },
+  { "id": 25, "query": "List all Uber rides since January", "intent": "list_transactions", "merchant": "uber", "date_required": true },
+
+  { "id": 26, "query": "How much did I spend on food delivery this month?", "intent": "total_spend", "category": "food", "date_required": true },
+  { "id": 27, "query": "Show all transport expenses this month", "intent": "list_transactions", "category": "transport", "date_required": true },
+  { "id": 28, "query": "How much did I spend on Netflix subscriptions?", "intent": "total_spend", "merchant": "netflix", "date_required": false },
+  { "id": 29, "query": "List shopping transactions from Amazon in August", "intent": "list_transactions", "merchant": "amazon", "date_required": true },
+  { "id": 30, "query": "What is my total entertainment spend this month?", "intent": "total_spend", "category": "entertainment", "date_required": true },
+
+  { "id": 31, "query": "Compare my food expenses in June and July", "intent": "compare_periods", "category": "food", "date_required": true },
+  { "id": 32, "query": "Show all Uber trips last month", "intent": "list_transactions", "merchant": "uber", "date_required": true },
+  { "id": 33, "query": "How much did I spend on rent this year?", "intent": "total_spend", "category": "rent", "date_required": false },
+  { "id": 34, "query": "List expenses above 1000 this month", "intent": "list_transactions", "date_required": true },
+  { "id": 35, "query": "What category did I spend the most on last month?", "intent": "top_category", "date_required": true },
+
+  { "id": 36, "query": "Show grocery purchases this month", "intent": "list_transactions", "category": "grocery", "date_required": true },
+  { "id": 37, "query": "How much did I spend on utilities in August?", "intent": "total_spend", "category": "utilities", "date_required": true },
+  { "id": 38, "query": "List all Swiggy food expenses this month", "intent": "list_transactions", "merchant": "swiggy", "date_required": true },
+  { "id": 39, "query": "What was my highest spending category this year?", "intent": "top_category", "date_required": false },
+  { "id": 40, "query": "How much did I spend on online shopping this month?", "intent": "total_spend", "category": "shopping", "date_required": true },
+
+  { "id": 41, "query": "Show entertainment expenses in September", "intent": "list_transactions", "category": "entertainment", "date_required": true },
+  { "id": 42, "query": "How much did I spend on travel this month?", "intent": "total_spend", "category": "transport", "date_required": true },
+  { "id": 43, "query": "List subscription payments this month", "intent": "list_transactions", "category": "subscriptions", "date_required": true },
+  { "id": 44, "query": "Compare shopping expenses this month vs last month", "intent": "compare_periods", "category": "shopping", "date_required": true },
+  { "id": 45, "query": "How much did I spend on cafes this month?", "intent": "total_spend", "category": "cafe", "date_required": true },
+
+  { "id": 46, "query": "Show all electricity bill transactions", "intent": "list_transactions", "category": "utilities", "date_required": false },
+  { "id": 47, "query": "What is my average spending on food?", "intent": "average_spend", "category": "food", "date_required": false },
+  { "id": 48, "query": "List all expenses in March", "intent": "list_transactions", "date_required": true },
+  { "id": 49, "query": "How much did I spend on gifts this year?", "intent": "total_spend", "category": "gifts", "date_required": false },
+  { "id": 50, "query": "Show all transport transactions since January", "intent": "list_transactions", "category": "transport", "date_required": true }
+]
