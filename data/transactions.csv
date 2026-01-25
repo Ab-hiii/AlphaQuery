@@ -89,3 +89,123 @@ date,amount,category,merchant,description
 2024-03-29,2000,rent,landlord,june rent
 2024-03-30,800,entertainment,netflix,subscription
 2024-03-31,1100,shopping,amazon,shoes
+2023-01-05,450,food,swiggy,lunch order
+2023-01-10,1200,shopping,amazon,clothes
+2023-01-15,999,subscriptions,netflix,monthly subscription
+2023-02-03,300,cafe,starbucks,coffee
+2023-02-14,2200,travel,makemytrip,flight booking
+2023-03-01,1500,rent,landlord,monthly rent
+2023-03-07,500,utilities,airtel,internet bill
+2023-04-12,750,food,zomato,dinner
+2023-05-20,1800,shopping,flipkart,phone accessories
+2023-06-02,999,subscriptions,spotify,monthly subscription
+2023-07-19,3200,travel,irctc,train tickets
+2023-08-11,400,cafe,ccd,coffee
+2023-09-23,2100,entertainment,bookmyshow,concert tickets
+2023-10-04,1600,utilities,electricityboard,electricity bill
+2023-11-15,5000,travel,goibibo,holiday booking
+2023-12-25,3500,gifts,amazon,christmas gifts
+
+2024-01-02,500,food,swiggy,breakfast
+2024-01-09,1500,shopping,amazon,shoes
+2024-01-15,1500,rent,landlord,monthly rent
+2024-01-22,999,subscriptions,netflix,monthly subscription
+2024-02-05,700,food,zomato,lunch
+2024-02-12,1200,utilities,jio,phone bill
+2024-02-18,2600,travel,airindia,flight
+2024-03-03,450,cafe,starbucks,coffee
+2024-03-10,999,subscriptions,spotify,monthly subscription
+2024-03-20,3200,shopping,myntra,clothing
+2024-04-01,1500,rent,landlord,monthly rent
+2024-04-14,900,entertainment,bookmyshow,movie tickets
+2024-05-09,650,food,swiggy,dinner
+2024-06-21,1800,travel,ola,cab rides
+2024-07-05,999,subscriptions,netflix,monthly subscription
+2024-08-17,1400,utilities,waterboard,water bill
+2024-09-11,2100,shopping,flipkart,home items
+2024-10-28,5000,travel,makemytrip,flight booking
+2024-11-19,3500,gifts,amazon,festival gifts
+2024-12-31,2500,entertainment,bookmyshow,new year event
+
+2025-01-08,600,food,zomato,lunch
+2025-01-15,1500,rent,landlord,monthly rent
+2025-02-02,999,subscriptions,spotify,monthly subscription
+2025-02-14,2800,travel,airindia,valentine trip
+2025-03-09,500,cafe,starbucks,coffee
+2025-04-18,2000,shopping,amazon,headphones
+2025-05-05,1200,utilities,airtel,internet bill
+2025-06-27,4500,travel,goibibo,summer vacation
+2025-07-07,750,food,swiggy,dinner
+2025-08-15,2200,gifts,amazon,independence day gifts
+2025-09-01,999,subscriptions,netflix,monthly subscription
+2025-10-22,3200,shopping,flipkart,festival shopping
+2025-11-11,1800,entertainment,bookmyshow,concert
+2025-12-25,4000,gifts,amazon,christmas shopping
+
+2026-01-02,550,food,zomato,lunch
+2026-01-05,999,subscriptions,spotify,monthly subscription
+2026-01-12,1600,utilities,jio,phone bill
+2026-01-18,800,food,swiggy,dinner
+2026-01-22,3000,travel,makemytrip,flight booking
+2026-01-25,1500,rent,landlord,monthly rent
+2025-06-01,1800,rent,landlord,monthly rent
+2025-06-02,1200,grocery,bigbasket,weekly groceries
+2025-06-03,450,food,swiggy,lunch
+2025-06-04,300,cafe,starbucks,coffee
+2025-06-05,900,transport,uber,office commute
+2025-06-06,999,subscriptions,netflix,monthly subscription
+2025-06-07,650,food,zomato,dinner
+2025-06-08,1100,shopping,amazon,household items
+2025-06-10,700,grocery,instamart,vegetables
+2025-06-12,500,utilities,airtel,internet bill
+2025-06-14,2200,entertainment,bookmyshow,concert tickets
+2025-06-16,800,transport,ola,city rides
+2025-06-18,450,food,swiggy,lunch
+2025-06-20,1400,shopping,flipkart,clothing
+2025-06-22,1000,grocery,bigbasket,groceries
+2025-06-25,999,subscriptions,spotify,music subscription
+2025-06-28,3200,travel,irctc,train tickets
+2025-07-01,1800,rent,landlord,monthly rent
+2025-07-02,1250,grocery,bigbasket,weekly groceries
+2025-07-04,500,cafe,ccd,coffee
+2025-07-05,950,transport,uber,office commute
+2025-07-06,750,food,zomato,dinner
+2025-07-08,1300,shopping,amazon,kitchen items
+2025-07-10,600,utilities,jio,phone bill
+2025-07-12,2400,entertainment,bookmyshow,movie + snacks
+2025-07-15,700,grocery,instamart,groceries
+2025-07-18,480,food,swiggy,lunch
+2025-07-20,1600,shopping,myntra,clothing
+2025-07-23,999,subscriptions,netflix,monthly subscription
+2025-07-26,3800,travel,makemytrip,flight booking
+2025-08-01,1800,rent,landlord,monthly rent
+2025-08-03,1400,grocery,bigbasket,monthly groceries
+2025-08-05,450,food,zomato,lunch
+2025-08-07,850,transport,uber,office commute
+2025-08-09,550,cafe,starbucks,coffee
+2025-08-11,999,subscriptions,spotify,monthly subscription
+2025-08-13,500,utilities,electricityboard,electricity bill
+2025-08-15,3000,gifts,amazon,festival gifts
+2025-08-18,900,food,swiggy,dinner
+2025-08-20,1700,shopping,flipkart,home decor
+2025-08-22,1200,grocery,instamart,vegetables
+2025-08-25,2400,entertainment,bookmyshow,concert
+2025-08-28,4200,travel,goibibo,holiday booking
+2025-09-01,1800,rent,landlord,monthly rent
+2025-09-03,1350,grocery,bigbasket,weekly groceries
+2025-09-05,600,food,zomato,lunch
+2025-09-07,900,transport,uber,office commute
+2025-09-09,450,cafe,ccd,coffee
+2026-01-01,1200,food,swiggy,new year dinner
+2026-01-03,450,cafe,starbucks,coffee
+2026-01-05,800,transport,uber,office commute
+2026-01-07,999,subscriptions,spotify,monthly
+2026-01-08,1200,grocery,bigbasket,groceries
+2026-01-10,600,food,zomato,lunch
+2026-01-12,350,cafe,ccd,evening coffee
+2026-01-15,1500,shopping,amazon,headphones
+2026-01-18,400,utilities,bescom,electricity bill
+2026-01-20,500,entertainment,bookmyshow,movie
+
+
+

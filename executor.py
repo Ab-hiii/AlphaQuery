@@ -4,82 +4,79 @@ import pandas as pd
 class Executor:
     """
     Deterministic execution engine over pandas.
-    One function per intent.
     """
 
     def __init__(self, csv_path="data/transactions.csv"):
-        self.df = pd.read_csv(csv_path)
-        self.df["date"] = pd.to_datetime(self.df["date"])
+        self.df = pd.read_csv(csv_path, skip_blank_lines=True)
+        self.df = self.df[self.df["date"] != "date"]
+        self.df["date"] = pd.to_datetime(self.df["date"], errors="coerce")
+        self.df = self.df.dropna(subset=["date"])
 
     def execute(self, intent, entities, start_date, end_date):
-        """
-        Execute intent using extracted entities and date range.
-        """
-
         df = self.df.copy()
 
-        # Date filtering
-        if start_date is not None and end_date is not None:
+        # ---------------- Date filter ----------------
+        if start_date and end_date:
             df = df[
                 (df["date"] >= pd.to_datetime(start_date)) &
                 (df["date"] <= pd.to_datetime(end_date))
             ]
 
-        # Category filtering
+        # ---------------- Entity filters ----------------
         if entities.get("category"):
             df = df[df["category"] == entities["category"]]
 
-        # Merchant filtering
         if entities.get("merchant"):
             df = df[df["merchant"] == entities["merchant"]]
 
-        # Intent dispatch
+        if entities.get("amount"):
+            df = df[df["amount"] >= entities["amount"]]
+
+        # ---------------- Intent dispatch ----------------
         if intent == "total_spend":
-            return self._total_spend(df)
+            return int(df["amount"].sum())
 
         if intent == "list_transactions":
-            return self._list_transactions(df)
+            return df[["date", "amount", "category", "merchant"]].to_dict(
+                orient="records"
+            )
 
         if intent == "top_category":
-            return self._top_category(df)
+            if df.empty:
+                return None
+            return df.groupby("category")["amount"].sum().idxmax()
 
         if intent == "compare_periods":
-            return self._compare_periods(df)
+            return self._compare_periods(df, start_date, end_date)
 
         if intent == "average_spend":
-            return self._average_spend(df)
+            return float(df["amount"].mean()) if not df.empty else 0
 
         raise ValueError(f"Unknown intent: {intent}")
 
-    # -------------------- Intent handlers --------------------
-
-    def _total_spend(self, df):
-        return int(df["amount"].sum())
-
-    def _list_transactions(self, df):
-        return df[["date", "amount", "category", "merchant"]].to_dict(
-            orient="records"
-        )
-
-    def _top_category(self, df):
-        if df.empty:
-            return None
-        grouped = df.groupby("category")["amount"].sum()
-        return grouped.idxmax()
-
-    def _compare_periods(self, df):
-        if df.empty:
+    # ---------------- FIXED COMPARISON LOGIC ----------------
+    def _compare_periods(self, df, start_date, end_date):
+        """
+        Always return ALL months in the requested range,
+        even if spending is zero.
+        """
+        if not start_date or not end_date:
             return {}
 
-        df["month"] = df["date"].dt.to_period("M")
-        comparison = df.groupby("month")["amount"].sum()
+        # Generate all months in range
+        periods = pd.period_range(
+            start=pd.to_datetime(start_date),
+            end=pd.to_datetime(end_date),
+            freq="M"
+        )
 
-        return {
-            str(month): int(amount)
-            for month, amount in comparison.items()
-        }
+        results = {}
 
-    def _average_spend(self, df):
-        if df.empty:
-            return 0
-        return float(df["amount"].mean())
+        for p in periods:
+            month_df = df[
+                (df["date"].dt.year == p.year) &
+                (df["date"].dt.month == p.month)
+            ]
+            results[str(p)] = int(month_df["amount"].sum())
+
+        return results

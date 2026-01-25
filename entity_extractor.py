@@ -1,79 +1,96 @@
-import json
 import re
+from rapidfuzz import process, fuzz
 
 
 class EntityExtractor:
     """
-    Rule-based entity extractor with deterministic conflict resolution
-    and category normalization.
+    Entity extractor with:
+    - explicit keyword-based category detection
+    - safe fuzzy merchant matching (token-based + guarded)
+    - merchant → category inference
     """
 
-    # Semantic normalization map
-    CATEGORY_NORMALIZATION = {
-        "travel": "transport"
+    CATEGORY_KEYWORDS = {
+        "rent": ["rent", "rental", "landlord"],
+        "cafe": ["coffee", "cafe", "cafes"],
+        "grocery": ["grocery", "groceries", "bigbasket", "instamart"],
+        "food": ["food", "meal", "lunch", "dinner", "swiggy", "zomato"],
+        "transport": ["transport", "travel", "uber", "ola", "cab"],
+        "utilities": ["utilities", "bill", "electricity", "water", "internet"],
+        "subscriptions": ["subscription", "subscriptions", "netflix", "spotify"],
+        "entertainment": ["entertainment", "movie", "concert"],
+        "gifts": ["gift", "gifts"],
+        "shopping": ["shopping", "purchase", "amazon", "flipkart"]
     }
 
-    def __init__(
-        self,
-        category_path="data/categories.json",
-        merchant_path="data/merchants.txt"
-    ):
-        with open(category_path, "r") as f:
-            self.categories = json.load(f)
+    MERCHANT_CATEGORY_MAP = {
+        "starbucks": "cafe",
+        "ccd": "cafe",
+        "swiggy": "food",
+        "zomato": "food",
+        "dominos": "food",
+        "uber": "transport",
+        "ola": "transport",
+        "amazon": "shopping",
+        "flipkart": "shopping",
+        "myntra": "shopping",
+        "bigbasket": "grocery",
+        "instamart": "grocery",
+        "netflix": "subscriptions",
+        "spotify": "subscriptions",
+        "bookmyshow": "entertainment",
+        "makemytrip": "travel",
+    }
 
-        with open(merchant_path, "r") as f:
-            self.merchants = [line.strip().lower() for line in f if line.strip()]
-
-        self.amount_pattern = re.compile(r"\b\d+\b")
+    def __init__(self, merchant_path="data/merchants.txt"):
+        with open(merchant_path) as f:
+            self.merchants = [m.strip().lower() for m in f if m.strip()]
 
     def extract(self, query: str):
-        query_lower = query.lower()
+        q = query.lower()
+        tokens = re.findall(r"[a-zA-Z]+", q)
 
         category = None
         merchant = None
         amount = None
 
-        # -------------------- CATEGORY DETECTION --------------------
-        category_scores = {}
+        # ---------------- CATEGORY (KEYWORDS) ----------------
+        for cat, kws in self.CATEGORY_KEYWORDS.items():
+            if any(k in q for k in kws):
+                category = cat
+                break
 
-        for cat, keywords in self.categories.items():
-            exact_match = 1 if cat in query_lower else 0
-            keyword_hits = 0
-            longest_kw = 0
-
-            for kw in keywords:
-                if kw in query_lower:
-                    keyword_hits += 1
-                    longest_kw = max(longest_kw, len(kw))
-
-            if exact_match or keyword_hits:
-                category_scores[cat] = (
-                    exact_match,
-                    keyword_hits,
-                    longest_kw
-                )
-
-        if category_scores:
-            category = sorted(
-                category_scores.items(),
-                key=lambda x: x[1],
-                reverse=True
-            )[0][0]
-
-        # -------------------- CATEGORY NORMALIZATION --------------------
-        if category in self.CATEGORY_NORMALIZATION:
-            category = self.CATEGORY_NORMALIZATION[category]
-
-        # -------------------- MERCHANT DETECTION --------------------
+        # ---------------- MERCHANT (EXACT MATCH) ----------------
         for m in self.merchants:
-            if m in query_lower:
+            if m in q:
                 merchant = m
                 break
 
-        # -------------------- AMOUNT DETECTION --------------------
-        match = self.amount_pattern.search(query_lower)
-        if match:
-            amount = int(match.group())
+        # ---------------- MERCHANT (FUZZY, TOKEN-BASED) ----------------
+        # Only try fuzzy matching if:
+        # - merchant not already found
+        # - query contains words that look like a name (length >= 6)
+        if not merchant:
+            for token in tokens:
+                if len(token) < 6:
+                    continue
+
+                match, score, _ = process.extractOne(
+                    token, self.merchants, scorer=fuzz.ratio
+                ) or (None, 0, None)
+
+                if score >= 88:   # slightly relaxed, still safe
+                    merchant = match
+                    break
+
+        # ---------------- CATEGORY INFERENCE FROM MERCHANT ----------------
+        if merchant and not category:
+            category = self.MERCHANT_CATEGORY_MAP.get(merchant)
+
+        # ---------------- AMOUNT ----------------
+        m = re.search(r"(above|over|greater than|>=)\s*(\d+)", q)
+        if m:
+            amount = int(m.group(2))
 
         return {
             "category": category,
