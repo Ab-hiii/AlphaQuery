@@ -1,7 +1,8 @@
-from intent_matcher import IntentMatcher
-from entity_extractor import EntityExtractor
-from date_parser import DateParser
-from executor import Executor
+from core.intent_matcher import IntentMatcher
+from core.entity_extractor import EntityExtractor
+from core.date_parser import DateParser
+from core.executor import Executor
+
 
 
 def load_test_queries(path="data/test_queries.txt"):

@@ -1,97 +1,112 @@
 import json
-from intent_matcher import IntentMatcher
-from entity_extractor import EntityExtractor
-from date_parser import DateParser
+from pprint import pprint
+from core.intent_matcher import IntentMatcher
+from core.entity_extractor import EntityExtractor
+from core.date_parser import DateParser
+from core.executor import Executor
+
 
 CHECK = "✅"
 CROSS = "❌"
+
 
 def load_tests(path="data/test_cases.json"):
     with open(path) as f:
         return json.load(f)
 
-def fmt(val):
-    return "None" if val is None else str(val)
+
+def normalize_date(dt):
+    if dt is None:
+        return None
+    return dt.isoformat()
+
+
+def swagger_response(query, intent_result, entities, start_date, end_date, result):
+    return {
+        "query": query,
+        "intent": intent_result,
+        "entities": entities,
+        "start_date": normalize_date(start_date),
+        "end_date": normalize_date(end_date),
+        "result": result
+    }
+
+
+def matches_expected(actual, expected):
+    """
+    Only validate fields that exist in expected test case.
+    """
+    # intent
+    if actual["intent"]["intent"] != expected["intent"]:
+        return False, "intent"
+
+    # category
+    if "category" in expected:
+        if actual["entities"]["category"] != expected["category"]:
+            return False, "category"
+
+    # merchant
+    if "merchant" in expected:
+        if actual["entities"]["merchant"] != expected["merchant"]:
+            return False, "merchant"
+
+    # amount
+    if "amount" in expected:
+        if actual["entities"]["amount"] != expected["amount"]:
+            return False, "amount"
+
+    # date
+    if expected.get("date_required", False):
+        if actual["start_date"] is None or actual["end_date"] is None:
+            return False, "date"
+
+    return True, None
+
 
 if __name__ == "__main__":
     matcher = IntentMatcher()
     extractor = EntityExtractor()
     parser = DateParser()
+    executor = Executor()
 
     tests = load_tests()
     passed = 0
 
-    print("\nFINAL SYSTEM EVALUATION")
+    print("\nFINAL SYSTEM EVALUATION (Swagger-aligned)")
     print("=" * 100)
 
     for t in tests:
         query = t["query"]
-        expected_intent = t["intent"]
-        expected_category = t.get("category")
-        expected_merchant = t.get("merchant")
-        date_required = t.get("date_required", False)
 
         intent_result = matcher.match_intent(query)
         entities = extractor.extract(query)
         start_date, end_date = parser.parse(query)
+        result = executor.execute(
+            intent_result["intent"],
+            entities,
+            start_date,
+            end_date
+        )
 
-        # ---- checks ----
-        intent_ok = intent_result["intent"] == expected_intent
+        actual = swagger_response(
+            query,
+            intent_result,
+            entities,
+            start_date,
+            end_date,
+            result
+        )
 
-        category_ok = True
-        if expected_category is not None:
-            category_ok = entities.get("category") == expected_category
+        ok, failed_field = matches_expected(actual, t)
 
-        merchant_ok = True
-        if expected_merchant is not None:
-            merchant_ok = entities.get("merchant") == expected_merchant
-
-        date_ok = True
-        if date_required:
-            date_ok = start_date is not None or end_date is not None
-
-        all_ok = intent_ok and category_ok and merchant_ok and date_ok
-        if all_ok:
-            passed += 1
-
-        # ---- output ----
         print(f"{t['id']:02d}. {query}")
+        pprint(actual, sort_dicts=False)
 
-        print(
-            f"    Intent    : "
-            f"{CHECK if intent_ok else CROSS} "
-            f"(expected={expected_intent}, predicted={intent_result['intent']})"
-        )
-
-        if expected_category is not None:
-            print(
-                f"    Category  : "
-                f"{CHECK if category_ok else CROSS} "
-                f"(expected={expected_category}, predicted={fmt(entities.get('category'))})"
-            )
-
-        if expected_merchant is not None:
-            print(
-                f"    Merchant  : "
-                f"{CHECK if merchant_ok else CROSS} "
-                f"(expected={expected_merchant}, predicted={fmt(entities.get('merchant'))})"
-            )
-
-        print(
-            f"    Date      : "
-            f"{CHECK if date_ok else CROSS} "
-            f"(parsed={start_date} → {end_date})"
-        )
-
-        print(
-            f"    Amount    : "
-            f"{fmt(entities.get('amount'))}"
-        )
-
-        print(
-            f"    RESULT    : "
-            f"{CHECK if all_ok else CROSS}"
-        )
+        if ok:
+            print(f"\nRESULT: {CHECK} PASSED\n")
+            passed += 1
+        else:
+            print(f"\nRESULT: {CROSS} FAILED → mismatch in `{failed_field}`\n")
 
         print("-" * 100)
 

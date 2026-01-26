@@ -13,34 +13,30 @@ class IntentMatcher:
                 "total spending",
                 "total expenses",
                 "how much money did i spend",
-                "spend on"
             ],
             "list_transactions": [
                 "show my",
                 "show all",
                 "list my",
                 "list all",
+                "show transactions",
                 "show expenses",
-                "show purchases",
-                "show transactions"
             ],
             "top_category": [
-                "highest spending category",
                 "biggest expense",
+                "highest spending category",
                 "most spent on",
-                "top spending category"
             ],
             "compare_periods": [
                 "compare my spending",
                 "compare expenses",
                 "versus",
-                "vs"
+                "vs",
             ],
             "average_spend": [
                 "average spending",
                 "average expense",
-                "average spend"
-            ]
+            ],
         }
 
         self.intent_names = list(self.intent_templates.keys())
@@ -56,12 +52,18 @@ class IntentMatcher:
         self.template_embeddings = self.model.encode(all_phrases)
 
     def match_intent(self, query):
-        query_emb = self.model.encode([query])
+        query_lower = query.lower()
+        query_emb = self.model.encode([query_lower])
         sims = cosine_similarity(query_emb, self.template_embeddings)[0]
 
         best_idx = int(np.argmax(sims))
         best_intent = self.phrase_to_intent[best_idx]
         best_score = float(sims[best_idx])
+
+        # ---------------- HEURISTIC CONFIDENCE BOOST ----------------
+        if best_intent == "list_transactions":
+            if any(w in query_lower for w in ["show", "list"]):
+                best_score = max(best_score, 0.55)
 
         return {
             "intent": best_intent,

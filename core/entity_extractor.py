@@ -3,13 +3,6 @@ from rapidfuzz import process, fuzz
 
 
 class EntityExtractor:
-    """
-    Entity extractor with:
-    - explicit keyword-based category detection
-    - safe fuzzy merchant matching (token-based + guarded)
-    - merchant → category inference
-    """
-
     CATEGORY_KEYWORDS = {
         "rent": ["rent", "rental", "landlord"],
         "cafe": ["coffee", "cafe", "cafes"],
@@ -54,22 +47,16 @@ class EntityExtractor:
         merchant = None
         amount = None
 
-        # ---------------- CATEGORY (KEYWORDS) ----------------
         for cat, kws in self.CATEGORY_KEYWORDS.items():
             if any(k in q for k in kws):
                 category = cat
                 break
 
-        # ---------------- MERCHANT (EXACT MATCH) ----------------
         for m in self.merchants:
             if m in q:
                 merchant = m
                 break
 
-        # ---------------- MERCHANT (FUZZY, TOKEN-BASED) ----------------
-        # Only try fuzzy matching if:
-        # - merchant not already found
-        # - query contains words that look like a name (length >= 6)
         if not merchant:
             for token in tokens:
                 if len(token) < 6:
@@ -79,15 +66,13 @@ class EntityExtractor:
                     token, self.merchants, scorer=fuzz.ratio
                 ) or (None, 0, None)
 
-                if score >= 88:   # slightly relaxed, still safe
+                if score >= 88:
                     merchant = match
                     break
 
-        # ---------------- CATEGORY INFERENCE FROM MERCHANT ----------------
         if merchant and not category:
             category = self.MERCHANT_CATEGORY_MAP.get(merchant)
 
-        # ---------------- AMOUNT ----------------
         m = re.search(r"(above|over|greater than|>=)\s*(\d+)", q)
         if m:
             amount = int(m.group(2))

@@ -56,5 +56,20 @@
   { "id": 47, "query": "What is my average spending on food?", "intent": "average_spend", "category": "food", "date_required": false },
   { "id": 48, "query": "List all expenses in March", "intent": "list_transactions", "date_required": true },
   { "id": 49, "query": "How much did I spend on gifts this year?", "intent": "total_spend", "category": "gifts", "date_required": false },
-  { "id": 50, "query": "Show all transport transactions since January", "intent": "list_transactions", "category": "transport", "date_required": true }
+  { "id": 50, "query": "Show all transport transactions since January", "intent": "list_transactions", "category": "transport", "date_required": true },
+  
+  { "id": 53, "query": "Show expenses above 1000 this month", "intent": "list_transactions", "category": null, "merchant": null, "amount_filter": ">1000", "date_required": true, "start_date": "2026-01-01", "end_date": "2026-01-31" },
+  { "id": 54, "query": "Compare my food expenses in January and December", "intent": "compare_periods", "category": "food", "merchant": null, "date_required": true, "periods": ["2026-01", "2025-12"] },
+  { "id": 55, "query": "Show all subscriptions this month", "intent": "list_transactions", "category": "subscriptions", "merchant": null, "date_required": true, "start_date": "2026-01-01", "end_date": "2026-01-31" },
+  { "id": 56, "query": "What is my biggest expense category this month?", "intent": "top_category", "category": null, "merchant": null, "date_required": true, "start_date": "2026-01-01", "end_date": "2026-01-31" },
+  { "id": 57, "query": "How much did I spend on Uber this month?", "intent": "total_spend", "category": "transport", "merchant": "uber", "date_required": true, "start_date": "2026-01-01", "end_date": "2026-01-31" },
+  { "id": 58, "query": "Show grocery purchases last month", "intent": "list_transactions", "category": "grocery", "merchant": null, "date_required": true, "start_date": "2025-12-01", "end_date": "2025-12-31" },
+  { "id": 59, "query": "What is my average spending this month?", "intent": "average_spend", "category": null, "merchant": null, "date_required": true, "start_date": "2026-01-01", "end_date": "2026-01-31" },
+  { "id": 60, "query": "List all expenses since January", "intent": "list_transactions", "category": null, "merchant": null, "date_required": true, "start_date": "2026-01-01", "end_date": "2026-01-25" },
+  { "id": 61, "query": "What did I spend yesterday?", "intent": "total_spend", "category": null, "merchant": null, "date_required": true, "start_date": "2026-01-24", "end_date": "2026-01-24" },
+  { "id": 62, "query": "Show expenses between January 5 and January 15", "intent": "list_transactions", "category": null, "merchant": null, "date_required": true, "start_date": "2026-01-05", "end_date": "2026-01-15" },
+  { "id": 63, "query": "Show last 30 days of spending", "intent": "list_transactions", "category": null, "merchant": null, "date_required": true, "start_date": "2025-12-26", "end_date": "2026-01-25" },
+  { "id": 64, "query": "Compare food expenses last week", "intent": "compare_periods", "category": "food", "merchant": null, "date_required": true, "start_date": "2026-01-18", "end_date": "2026-01-24", "note": "Compare to previous week: 2026-01-11 to 2026-01-17" },
+  { "id": 65, "query": "Show starbucsk transactions this month", "intent": "list_transactions", "category": "cafe", "merchant": "starbucks", "date_required": true, "start_date": "2026-01-01", "end_date": "2026-01-31", "note": "Typo: starbucsk should fuzzy match to starbucks" },
+  { "id": 66, "query": "List uber rides yesterday", "intent": "list_transactions", "category": "transport", "merchant": "uber", "date_required": true, "start_date": "2026-01-24", "end_date": "2026-01-24" }
 ]
