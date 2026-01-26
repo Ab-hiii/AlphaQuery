@@ -1,3 +1,12 @@
+import sys
+from pathlib import Path
+
+# -------------------------------------------------
+# Ensure project root is on PYTHONPATH (Streamlit Cloud fix)
+# -------------------------------------------------
+ROOT_DIR = Path(__file__).resolve().parents[1]
+sys.path.append(str(ROOT_DIR))
+
 import streamlit as st
 from datetime import datetime
 
