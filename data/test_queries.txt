@@ -48,3 +48,19 @@ What is my average spending on food per month?
 List all expenses recorded in March
 How much did I spend on gifts during the festive season?
 Show all transport and travel transactions since January
+Show my expenses between January 5 and January 15
+What did I spend last week?
+Show expenses above 1000 this month
+Compare my food expenses in January and December
+Show all subscriptions this month
+What is my biggest expense category this month?
+How much did I spend on Uber this month?
+Show grocery purchases last month
+What is my average spending this month?
+List all expenses since January
+What did I spend yesterday?
+Show expenses between January 5 and January 15
+Show last 30 days of spending
+Compare food expenses last week
+Show starbucsk transactions this month
+List uber rides yesterday
