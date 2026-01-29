@@ -1,251 +1,86 @@
-# ======================================================
-# Streamlit Cloud PYTHONPATH FIX (REQUIRED)
-# ======================================================
-import sys
-from pathlib import Path
-
-ROOT_DIR = Path(__file__).resolve().parents[1]
-if str(ROOT_DIR) not in sys.path:
-    sys.path.append(str(ROOT_DIR))
-
-# ======================================================
-# Imports
-# ======================================================
 import streamlit as st
-import pandas as pd
-from datetime import datetime
+import requests
 
-from core.intent_matcher import IntentMatcher
-from core.entity_extractor import EntityExtractor
-from core.date_parser import DateParser
-from core.executor import Executor
+from theme import apply_dark_theme
+from components import render_result
+from charts import render_chart
 
-# ======================================================
-# Page config
-# ======================================================
+# ------------------------------------------------------------------
+# Page configuration (NEW)
+# ------------------------------------------------------------------
 st.set_page_config(
     page_title="AlphaQuery",
-    page_icon="💸",
-    layout="centered"
+    page_icon="🧠",
+    layout="wide"
 )
 
-# ======================================================
-# Load NLP pipeline (once per session)
-# ======================================================
-@st.cache_resource
-def load_pipeline():
-    return (
-        IntentMatcher(),
-        EntityExtractor(),
-        DateParser(),
-        Executor()
-    )
-
-intent_matcher, entity_extractor, date_parser, executor = load_pipeline()
-
-# ======================================================
-# Session state
-# ======================================================
-if "history" not in st.session_state:
-    st.session_state.history = []
-
-if "query_input" not in st.session_state:
-    st.session_state.query_input = ""
-
-# ======================================================
-# Data loading utilities
-# ======================================================
-REQUIRED_COLUMNS = {"date", "amount", "category", "merchant", "description"}
-
-def load_transactions(file=None):
-    if file is not None:
-        df = pd.read_csv(file)
-    else:
-        df = pd.read_csv("data/transactions.csv")
-
-    missing = REQUIRED_COLUMNS - set(df.columns)
-    if missing:
-        st.error(f"CSV missing required columns: {missing}")
-        st.stop()
-
-    df["date"] = pd.to_datetime(df["date"], errors="coerce")
-    df = df.dropna(subset=["date"])
-    return df
-
-# ======================================================
-# Sidebar – Data source + recent queries
-# ======================================================
-st.sidebar.header("📂 Data Source")
-
-uploaded_file = st.sidebar.file_uploader(
-    "Upload your transaction CSV",
-    type=["csv"],
-    help="Required columns: date, amount, category, merchant, description"
+# ------------------------------------------------------------------
+# Navigation (NEW)
+# ------------------------------------------------------------------
+page = st.sidebar.radio(
+    "Navigation",
+    options=["🏠 Query Interface", "🧪 Test Runner", "📊 Dashboard"],
+    index=0
 )
 
-if uploaded_file:
-    transactions_df = load_transactions(uploaded_file)
-    st.sidebar.success("Using uploaded dataset")
-else:
-    transactions_df = load_transactions()
-    st.sidebar.info("Using default dataset")
+API_URL = "http://127.0.0.1:8000/query"
 
-# ---------------- Recent Queries ----------------
-st.sidebar.divider()
-st.sidebar.subheader("🕘 Recent Queries")
+# ------------------------------------------------------------------
+# QUERY INTERFACE (Existing app, unchanged)
+# ------------------------------------------------------------------
+if page == "🏠 Query Interface":
 
-if st.session_state.history:
-    for idx, item in enumerate(st.session_state.history[:5]):
-        label = f"{item['query'][:40]} ({item['intent']})"
-        if st.sidebar.button(label, key=f"history_{idx}"):
-            st.session_state.query_input = item["query"]
-else:
-    st.sidebar.caption("No recent queries")
+    apply_dark_theme()
 
-if st.sidebar.button("🗑️ Clear History", key="clear_history"):
-    st.session_state.history = []
-
-# ======================================================
-# Hero Section
-# ======================================================
-st.markdown(
-    """
-    <style>
-        .hero {
-            padding: 1.6rem;
-            border-radius: 14px;
-            background: linear-gradient(135deg, #1f2933, #0f172a);
-            margin-bottom: 1.6rem;
-        }
-    </style>
-    """,
-    unsafe_allow_html=True
-)
-
-with st.container():
-    st.markdown('<div class="hero">', unsafe_allow_html=True)
-
-    st.title("💸 AlphaQuery")
-    st.caption("Ask questions about your expenses in plain English")
-
-    col1, col2, col3, col4 = st.columns(4)
-
-    col1.metric("Total Transactions", f"{len(transactions_df):,}")
-    col2.metric(
-        "Date Range",
-        f"{transactions_df['date'].min().date()} → {transactions_df['date'].max().date()}"
-    )
-    col3.metric("Categories", transactions_df["category"].nunique())
-    col4.metric("Merchants", transactions_df["merchant"].nunique())
-
-    st.markdown("</div>", unsafe_allow_html=True)
-
-# ======================================================
-# Example queries
-# ======================================================
-with st.expander("💡 Example queries"):
+    # ---------- Header ----------
+    st.markdown("## 🧠 AlphaQuery")
     st.markdown(
-        """
-        - How much did I spend on food last month?
-        - What is my biggest expense category?
-        - Show my Zomato orders in January
-        - Compare my spending this month vs last month
-        """
-    )
-
-# ======================================================
-# Query input
-# ======================================================
-query = st.text_input(
-    "Enter your query",
-    value=st.session_state.query_input,
-    placeholder="e.g. What is my biggest expense category?"
-)
-
-# ======================================================
-# Run query
-# ======================================================
-if st.button("Analyze", key="analyze_btn") and query.strip():
-    with st.spinner("Analyzing query..."):
-        intent = intent_matcher.match_intent(query)
-        entities = entity_extractor.extract(query)
-        start_date, end_date = date_parser.parse(query)
-
-        # Inject selected dataframe into executor
-        executor.df = transactions_df.copy()
-
-        result = executor.execute(
-            intent["intent"],
-            entities,
-            start_date,
-            end_date
-        )
-
-    # Save query to history (most recent first)
-    st.session_state.history.insert(
-        0,
-        {
-            "query": query,
-            "intent": intent["intent"],
-            "time": datetime.now().strftime("%H:%M")
-        }
-    )
-    st.session_state.history = st.session_state.history[:5]
-
-    # --------------------------------------------------
-    # Interpretation
-    # --------------------------------------------------
-    st.subheader("🧠 How the system understood your query")
-
-    st.json({
-        "intent": intent,
-        "entities": entities,
-        "date_range": {
-            "start": start_date.isoformat() if start_date else None,
-            "end": end_date.isoformat() if end_date else None
-        },
-        "result": result
-    })
-
-    # --------------------------------------------------
-    # Confidence indicator
-    # --------------------------------------------------
-    st.markdown("### 🔍 Confidence")
-
-    confidence = intent["score"]
-
-    if confidence >= 0.7:
-        color = "lime"
-    elif confidence >= 0.5:
-        color = "orange"
-    else:
-        color = "red"
-
-    st.progress(confidence)
-    st.markdown(
-        f"<span style='color:{color}; font-weight:600'>Confidence: {confidence:.2%}</span>",
+        "<p class='muted'>Ask questions about your expenses in plain English.</p>",
         unsafe_allow_html=True
     )
 
-    # --------------------------------------------------
-    # Result display
-    # --------------------------------------------------
-    st.subheader("📊 Result")
+    # ---------- Examples ----------
+    with st.expander("💡 Example queries"):
+        st.markdown("""
+        - How much did I spend on food last month?
+        - Show my Amazon purchases this month
+        - Compare my spending this month vs last month
+        - What is my biggest expense category?
+        """)
 
-    if isinstance(result, list):
-        st.dataframe(result, use_container_width=True)
-    else:
-        st.write(result)
+    # ---------- Input ----------
+    query = st.text_input(
+        "Enter your query",
+        placeholder="e.g. How much did I spend on food last month?"
+    )
 
-# ======================================================
-# Footer
-# ======================================================
-st.markdown(
-    """
-    <hr/>
-    <p style="text-align:center; color:#9aa0a6; font-size:12px;">
-    AlphaQuery · Final Year Project
-    </p>
-    """,
-    unsafe_allow_html=True
-)
+    if st.button("Analyze") and query:
+        with st.spinner("Analyzing your expenses..."):
+            res = requests.get(API_URL, params={"q": query})
+
+        if res.status_code != 200:
+            st.error("Backend API error. Is FastAPI running?")
+        else:
+            data = res.json()
+            st.divider()
+            render_result(data)
+
+# ------------------------------------------------------------------
+# TEST RUNNER PAGE (NEW)
+# ------------------------------------------------------------------
+elif page == "🧪 Test Runner":
+    import sys
+    sys.path.append("ui/pages")
+
+    try:
+        from test_runner import main as test_runner_main
+        test_runner_main()
+    except Exception as e:
+        st.error("Failed to load Test Runner")
+        st.exception(e)
+
+# ------------------------------------------------------------------
+# DASHBOARD PAGE (Placeholder)
+# ------------------------------------------------------------------
+elif page == "📊 Dashboard":
+    st.info("📊 Dashboard coming soon!")
