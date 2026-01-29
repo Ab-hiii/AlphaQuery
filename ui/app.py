@@ -1,11 +1,12 @@
 # ======================================================
-# Streamlit Cloud PYTHONPATH FIX
+# Streamlit Cloud PYTHONPATH FIX (REQUIRED)
 # ======================================================
 import sys
 from pathlib import Path
 
 ROOT_DIR = Path(__file__).resolve().parents[1]
-sys.path.append(str(ROOT_DIR))
+if str(ROOT_DIR) not in sys.path:
+    sys.path.append(str(ROOT_DIR))
 
 # ======================================================
 # Imports
@@ -29,7 +30,7 @@ st.set_page_config(
 )
 
 # ======================================================
-# Load NLP pipeline (once)
+# Load NLP pipeline (once per session)
 # ======================================================
 @st.cache_resource
 def load_pipeline():
@@ -43,7 +44,7 @@ def load_pipeline():
 intent_matcher, entity_extractor, date_parser, executor = load_pipeline()
 
 # ======================================================
-# Session state for recent queries
+# Session state
 # ======================================================
 if "history" not in st.session_state:
     st.session_state.history = []
@@ -52,7 +53,7 @@ if "query_input" not in st.session_state:
     st.session_state.query_input = ""
 
 # ======================================================
-# Data loading
+# Data loading utilities
 # ======================================================
 REQUIRED_COLUMNS = {"date", "amount", "category", "merchant", "description"}
 
@@ -72,7 +73,7 @@ def load_transactions(file=None):
     return df
 
 # ======================================================
-# Sidebar – Data + Recent Queries
+# Sidebar – Data source + recent queries
 # ======================================================
 st.sidebar.header("📂 Data Source")
 
@@ -94,14 +95,14 @@ st.sidebar.divider()
 st.sidebar.subheader("🕘 Recent Queries")
 
 if st.session_state.history:
-    for item in st.session_state.history[:5]:
+    for idx, item in enumerate(st.session_state.history[:5]):
         label = f"{item['query'][:40]} ({item['intent']})"
-        if st.sidebar.button(label):
+        if st.sidebar.button(label, key=f"history_{idx}"):
             st.session_state.query_input = item["query"]
 else:
     st.sidebar.caption("No recent queries")
 
-if st.sidebar.button("🗑️ Clear History"):
+if st.sidebar.button("🗑️ Clear History", key="clear_history"):
     st.session_state.history = []
 
 # ======================================================
@@ -140,7 +141,20 @@ with st.container():
     st.markdown("</div>", unsafe_allow_html=True)
 
 # ======================================================
-# Query Input
+# Example queries
+# ======================================================
+with st.expander("💡 Example queries"):
+    st.markdown(
+        """
+        - How much did I spend on food last month?
+        - What is my biggest expense category?
+        - Show my Zomato orders in January
+        - Compare my spending this month vs last month
+        """
+    )
+
+# ======================================================
+# Query input
 # ======================================================
 query = st.text_input(
     "Enter your query",
@@ -149,14 +163,15 @@ query = st.text_input(
 )
 
 # ======================================================
-# Run Query
+# Run query
 # ======================================================
-if st.button("Analyze") and query.strip():
+if st.button("Analyze", key="analyze_btn") and query.strip():
     with st.spinner("Analyzing query..."):
         intent = intent_matcher.match_intent(query)
         entities = entity_extractor.extract(query)
         start_date, end_date = date_parser.parse(query)
 
+        # Inject selected dataframe into executor
         executor.df = transactions_df.copy()
 
         result = executor.execute(
@@ -166,7 +181,7 @@ if st.button("Analyze") and query.strip():
             end_date
         )
 
-    # Save to history (most recent first)
+    # Save query to history (most recent first)
     st.session_state.history.insert(
         0,
         {
@@ -193,7 +208,7 @@ if st.button("Analyze") and query.strip():
     })
 
     # --------------------------------------------------
-    # Confidence
+    # Confidence indicator
     # --------------------------------------------------
     st.markdown("### 🔍 Confidence")
 
@@ -213,7 +228,7 @@ if st.button("Analyze") and query.strip():
     )
 
     # --------------------------------------------------
-    # Result
+    # Result display
     # --------------------------------------------------
     st.subheader("📊 Result")
 
