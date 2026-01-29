@@ -10,6 +10,7 @@ class DateParser:
     Handles:
     - specific dates
     - full months / years
+    - standalone years (e.g. 2025)  ✅ FIXED
     - since <month>
     - last week / yesterday / last N days
     - between <date> and <date>
@@ -70,7 +71,7 @@ class DateParser:
             return self._start(start), self._end(now)
 
         # --------------------------------------------------
-        # SINCE <MONTH>  ✅ FIXED
+        # SINCE <MONTH>
         # --------------------------------------------------
         m = re.search(
             r"since\s+(january|february|march|april|may|june|july|august|september|october|november|december)",
@@ -93,11 +94,11 @@ class DateParser:
         # LAST MONTH
         # --------------------------------------------------
         if "last month" in q:
-            y, m = now.year, now.month - 1
-            if m == 0:
+            y, mth = now.year, now.month - 1
+            if mth == 0:
                 y -= 1
-                m = 12
-            return self._full_month(y, m)
+                mth = 12
+            return self._full_month(y, mth)
 
         # --------------------------------------------------
         # THIS MONTH
@@ -109,11 +110,17 @@ class DateParser:
         # THIS YEAR / LAST YEAR
         # --------------------------------------------------
         if "this year" in q:
-            return self._start(datetime(now.year, 1, 1)), self._end(datetime(now.year, 12, 31))
+            return (
+                self._start(datetime(now.year, 1, 1)),
+                self._end(datetime(now.year, 12, 31)),
+            )
 
         if "last year" in q:
             y = now.year - 1
-            return self._start(datetime(y, 1, 1)), self._end(datetime(y, 12, 31))
+            return (
+                self._start(datetime(y, 1, 1)),
+                self._end(datetime(y, 12, 31)),
+            )
 
         # --------------------------------------------------
         # IN <MONTH>
@@ -127,7 +134,18 @@ class DateParser:
             return self._full_month(now.year, month)
 
         # --------------------------------------------------
-        # FALLBACK
+        # IN <YEAR>  ✅ FINAL FIX
+        # --------------------------------------------------
+        m = re.search(r"\b(19|20)\d{2}\b", q)
+        if m:
+            year = int(m.group())
+            return (
+                self._start(datetime(year, 1, 1)),
+                self._end(datetime(year, 12, 31)),
+            )
+
+        # --------------------------------------------------
+        # FALLBACK (single date)
         # --------------------------------------------------
         parsed = dateparser.parse(q)
         if parsed:
