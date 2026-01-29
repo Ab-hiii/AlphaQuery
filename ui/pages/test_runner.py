@@ -1,13 +1,12 @@
 """
 Interactive test runner for validating the NLP query system
-(SCHEMA-SAFE VERSION)
+(SCHEMA-SAFE VERSION — FIXED)
 """
 
 import streamlit as st
 import requests
 import json
 import pandas as pd
-from datetime import datetime
 import sys
 import os
 
@@ -23,7 +22,7 @@ from evaluation.comprehensive_validator import ComprehensiveValidator
 # ------------------------------------------------------------------
 # Configuration
 # ------------------------------------------------------------------
-API_URL = "http://localhost:8000/query"
+API_URL = "http://127.0.0.1:8000/query"
 TEST_CASES_PATH = "data/test_cases.json"
 
 # ------------------------------------------------------------------
@@ -35,11 +34,6 @@ def load_test_cases():
 
 
 def get_intent(tc):
-    """
-    Supports BOTH schemas:
-    - Flat:  { "intent": "total_spend" }
-    - Nested: { "expected": { "intent": { "intent": "total_spend" } } }
-    """
     if "expected" in tc:
         intent = tc["expected"].get("intent")
         if isinstance(intent, dict):
@@ -49,9 +43,6 @@ def get_intent(tc):
 
 
 def normalize_expected(tc):
-    """
-    Convert flat test case → ComprehensiveValidator format
-    """
     if "expected" in tc:
         return tc["expected"]
 
@@ -60,17 +51,18 @@ def normalize_expected(tc):
         "entities": {
             "category": tc.get("category"),
             "merchant": tc.get("merchant"),
-            "amount": tc.get("amount")
+            "amount": tc.get("amount"),
         },
         "start_date": None,
         "end_date": None,
-        "result": None
+        "result": None,
     }
 
 
 def run_single_test(query: str):
     try:
-        res = requests.get(f"{API_URL}/query", params={"q": query}, timeout=10)
+        # ✅ FIX: DO NOT append /query again
+        res = requests.get(API_URL, params={"q": query}, timeout=10)
         res.raise_for_status()
         return res.json()
     except Exception as e:
@@ -104,15 +96,11 @@ def display_comparison(expected, actual, validation):
     cols[2].metric("Dates", "✅" if validation["date_match"] else "❌")
     cols[3].metric("Result", "✅" if validation["result_valid"] else "❌")
 
-    if validation["issues"]:
-        st.markdown("#### 🚨 Issues")
-        for i in validation["issues"]:
-            st.error(i)
+    for issue in validation["issues"]:
+        st.error(issue)
 
-    if validation["warnings"]:
-        st.markdown("#### ⚠️ Warnings")
-        for w in validation["warnings"]:
-            st.warning(w)
+    for warning in validation["warnings"]:
+        st.warning(warning)
 
 # ------------------------------------------------------------------
 # Main App
@@ -134,26 +122,21 @@ def main():
     selected_intents = st.sidebar.multiselect(
         "Filter by Intent",
         options=all_intents,
-        default=all_intents
+        default=all_intents,
     )
 
     if st.sidebar.button("🚀 Run All Tests"):
         st.session_state.run_all = True
 
-    # Tabs
     tab1, tab2 = st.tabs(["🧪 Run Tests", "📊 Summary"])
 
-    # --------------------------------------------------
-    # TAB 1: Individual + Bulk tests
-    # --------------------------------------------------
+    # ---------------- TAB 1 ----------------
     with tab1:
         filtered_tests = [
             tc for tc in test_cases if get_intent(tc) in selected_intents
         ]
 
         if st.session_state.get("run_all", False):
-            st.markdown("## Running All Tests")
-
             results = []
             bar = st.progress(0)
 
@@ -170,14 +153,14 @@ def main():
                 results.append({
                     "query": tc["query"],
                     "intent": get_intent(tc),
-                    "passed": validation["passed"]
+                    "passed": validation["passed"],
                 })
 
                 bar.progress((i + 1) / len(filtered_tests))
 
-            passed = sum(r["passed"] for r in results)
-            st.success(f"✅ {passed}/{len(results)} tests passed")
-
+            st.success(
+                f"✅ {sum(r['passed'] for r in results)}/{len(results)} tests passed"
+            )
             st.dataframe(pd.DataFrame(results), use_container_width=True)
             st.session_state.run_all = False
 
@@ -197,19 +180,14 @@ def main():
                 )
                 display_comparison(expected, actual, validation)
 
-    # --------------------------------------------------
-    # TAB 2: Summary
-    # --------------------------------------------------
+    # ---------------- TAB 2 ----------------
     with tab2:
         st.markdown("## Test Coverage Summary")
-
-        by_intent = {}
+        summary = {}
         for tc in test_cases:
-            intent = get_intent(tc)
-            by_intent.setdefault(intent, 0)
-            by_intent[intent] += 1
+            summary[get_intent(tc)] = summary.get(get_intent(tc), 0) + 1
 
-        for intent, count in by_intent.items():
+        for intent, count in summary.items():
             st.markdown(f"- **{intent}** → {count} tests")
 
 
