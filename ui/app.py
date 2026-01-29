@@ -136,7 +136,6 @@ if st.button("Analyze", key="analyze_btn") and query.strip():
         entities = entity_extractor.extract(query)
         start_date, end_date = date_parser.parse(query)
 
-        # Inject selected dataframe into executor
         executor.df = transactions_df.copy()
 
         result = executor.execute(
@@ -146,13 +145,10 @@ if st.button("Analyze", key="analyze_btn") and query.strip():
             end_date=end_date
         )
 
-    # Save query to history (most recent first)
+    # Save query to history
     st.session_state.history.insert(
         0,
-        {
-            "query": query,
-            "intent": intent["intent"]
-        }
+        {"query": query, "intent": intent["intent"]}
     )
 
     # ==================================================
@@ -169,33 +165,67 @@ if st.button("Analyze", key="analyze_btn") and query.strip():
         })
 
     # ==================================================
-    # Confidence indicator
+    # Confidence
     # ==================================================
     st.markdown("### 🔍 Confidence")
     st.progress(min(intent["score"], 1.0))
 
     # ==================================================
-    # Result display (FINAL FIX)
+    # Result
     # ==================================================
     st.subheader("📊 Result")
 
-    # ---- Case 1: List (transactions) ----
+    # --------------------------------------------------
+    # CASE 1: LIST → table + charts
+    # --------------------------------------------------
     if isinstance(result, list):
-        if result:
-            df = pd.DataFrame(result)
-            df["date"] = pd.to_datetime(df["date"]).dt.date
-            st.dataframe(df, use_container_width=True)
-        else:
-            st.info("No transactions found for this query.")
 
-    # ---- Case 2: Dict (compare_periods) ----
+        if not result:
+            st.info("No transactions found.")
+        else:
+            df = pd.DataFrame(result)
+            df["date"] = pd.to_datetime(df["date"])
+
+            # ---- Table ----
+            st.markdown("### 🧾 Transactions")
+            st.dataframe(
+                df[["date", "amount", "category", "merchant"]],
+                use_container_width=True
+            )
+
+            # ---- Time series ----
+            st.markdown("### 📈 Spending Over Time")
+            daily = (
+                df.groupby(df["date"].dt.date)["amount"]
+                .sum()
+                .reset_index()
+                .rename(columns={"date": "day"})
+            )
+            st.line_chart(daily.set_index("day"))
+
+            # ---- Category breakdown ----
+            if df["category"].nunique() > 1:
+                st.markdown("### 🧩 Category Breakdown")
+                cat_df = (
+                    df.groupby("category")["amount"]
+                    .sum()
+                    .sort_values(ascending=False)
+                )
+                st.bar_chart(cat_df)
+
+    # --------------------------------------------------
+    # CASE 2: DICT → compare periods
+    # --------------------------------------------------
     elif isinstance(result, dict):
+        st.markdown("### 📊 Period Comparison")
         df = pd.DataFrame(
             list(result.items()),
             columns=["Period", "Amount"]
         )
         st.bar_chart(df.set_index("Period"))
 
-    # ---- Case 3: Scalar (total / average / top_category) ----
+    # --------------------------------------------------
+    # CASE 3: SCALAR → metric
+    # --------------------------------------------------
     else:
         st.metric("Result", result)
